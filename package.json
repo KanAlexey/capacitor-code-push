@@ -49,7 +49,9 @@
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build",
     "test": "vitest run",
-    "typecheck:test": "tsc -p test/tsconfig.json"
+    "typecheck:test": "tsc -p test/tsconfig.json",
+    "test:android": "cd android && ./gradlew test",
+    "test:ios": "xcodebuild test -scheme CapacitorCodePush -destination \"platform=iOS Simulator,name=${IOS_SIMULATOR:-iPhone 16 Pro}\""
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.0",
