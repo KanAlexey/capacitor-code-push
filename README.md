@@ -1,26 +1,96 @@
 # capacitor-code-push
 
-CodePush client for Capacitor apps: over-the-air web updates from a CodePush-compatible server such as Revopush
+CodePush client for Capacitor apps: over-the-air web updates from a CodePush-compatible server such as
+[Revopush](https://revopush.org).
+
+It is written for apps moving from Cordova to Capacitor that ran Microsoft's archived
+[cordova-plugin-code-push](https://github.com/microsoft/cordova-plugin-code-push). It speaks the same protocol, keeps
+the same client id and the same install modes, and serves an update through Capacitor's own server path, so it
+needs none of cordova-plugin-file, cordova-plugin-zip, cordova-plugin-dialogs, cordova-plugin-device or
+cordova-plugin-advanced-http. How it works, and why, is in [DESIGN.md](DESIGN.md).
+
+> **Status: not yet proven on devices.** The state machine, staging and protocol are covered by tests that need no
+> device (TypeScript, JVM and XCTest), and both platforms build. Nothing has been measured against a real Revopush
+> release yet; DESIGN.md §17 lists what only that can prove.
 
 ## Install
 
-To use npm
-
 ```bash
 npm install capacitor-code-push
-````
-
-To use yarn
-
-```bash
-yarn add capacitor-code-push
-```
-
-Sync native files
-
-```bash
 npx cap sync
 ```
+
+Capacitor 8, iOS 15 and later (Swift Package Manager), Android API 24 and later.
+
+## Configure
+
+```ts
+// capacitor.config.ts
+plugins: {
+  CodePush: {
+    serverUrl: 'https://api.revopush.org/',
+    iosDeploymentKey: '…',
+    androidDeploymentKey: '…',
+  },
+},
+```
+
+`CodePush.configure({ serverUrl, deploymentKey })` overrides both at run time. `allowInsecureDownloads: true` lets
+a local test server serve plain HTTP. `publicKey` is refused for now: signature verification is not built yet, so a
+configured key makes every install fail rather than install unverified code.
+
+## Use
+
+```ts
+import { CodePush, InstallMode, SyncStatus } from 'capacitor-code-push';
+
+// On every start, not only when online: an update that never confirms is rolled back at the next cold start.
+await CodePush.notifyApplicationReady();
+
+const status = await CodePush.sync(
+  {
+    installMode: InstallMode.ON_NEXT_RESTART,
+    // Required: decide what the user is asked. `() => true` installs without asking.
+    onUpdateAvailable: async (update) => confirm(`Install ${update.label}?`),
+  },
+  { onStatus: (s) => console.log(SyncStatus[s]), onProgress: (p) => console.log(p.receivedBytes, p.totalBytes) },
+);
+if (status === SyncStatus.UPDATE_INSTALLED) {
+  await CodePush.restartApplication();
+}
+```
+
+## Releasing an update
+
+Release a copy of the app's web build placed in a folder named `www`, for example
+`revopush release <app> ./release/www <targetBinaryVersion>`. The plugin serves the folder that holds
+`index.html`, and computes the store bundle's hash under the same `www` prefix, so the server can tell a device that
+already runs the release. The binary version is `versionName` on Android and `CFBundleShortVersionString` on iOS;
+make sure the iOS build sets `MARKETING_VERSION`.
+
+## Moving from cordova-plugin-code-push
+
+Remove cordova-plugin-code-push in the same app update that adds this plugin; never ship both. The update is a new
+binary, so every device starts on the store bundle. The plugin carries cordova-plugin-code-push's last reported
+version over once, so the first report names where the device came from, and deletes that plugin's `codepush/`
+folder.
+
+## Development
+
+```bash
+npm ci
+npm test                    # TypeScript (Vitest)
+npm run typecheck:test      # sources, tests and the type contract in test/types
+cd android && ./gradlew test   # JVM tests (JDK 21)
+xcodebuild test -scheme CapacitorCodePush -destination 'platform=iOS Simulator,name=<an iPhone>'
+```
+
+`test/fixtures/hash` holds a release and the package hash the Revopush CLI computes for it; all three suites check
+their hasher against it.
+
+## Licence
+
+Apache-2.0. `src/acquisition-client.ts` is adapted from microsoft/code-push and carries its MIT notice.
 
 ## API
 

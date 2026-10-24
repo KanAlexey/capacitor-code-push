@@ -215,7 +215,7 @@ capacitor-codepush/
   "failedHashes": ["..."],                          // rolled back on this binary
   "rollbackReport": { /* package metadata */ } | null,  // a rollback not yet handed to JS
   "binaryHash": "...",                              // cache for §11, valid for `binary`
-  "telemetry": { "lastReportedIdentifier": "v12:<key>" | "1.2.3" | null, "retryReport": { } | null }
+  "telemetry": { "lastReportedIdentifier": "<key>:v12" | "1.2.3" | null, "retryReport": { } | null }
 }
 ```
 
@@ -304,7 +304,7 @@ native code injecting `window.codePush.reportStatus(...)` on `deviceready`.
 `notifyApplicationReady()` (native) picks the first that applies:
 
 1. a stored `rollbackReport` → `{ package, status: 'DeploymentFailed' }`;
-2. `didUpdate` and the current package's identifier `label:deploymentKey` differs from `lastReportedIdentifier` →
+2. `didUpdate` and the current package's identifier `deploymentKey:label` (react-native-code-push's form) differs from `lastReportedIdentifier` →
    `{ package, status: 'DeploymentSucceeded', previousLabelOrAppVersion, previousDeploymentKey }`;
 3. running the store bundle and `appVersion` differs from `lastReportedIdentifier` →
    `{ appVersion, previousLabelOrAppVersion, previousDeploymentKey }` (also on the very first launch);
@@ -420,7 +420,7 @@ The app update that swaps the plugins is a new binary, so §8 already starts it 
 the Cordova plugin's packages is carried over. Once, when `state.json` does not exist yet:
 
 - carry over its last reported version (Android preferences `CODE_PUSH_LAST_VERSION`, iOS user default
-  `CODE_PUSH_LAST_VERSION`) into `telemetry.lastReportedIdentifier` (`v<N>` with its key as `label:key`, anything
+  `CODE_PUSH_LAST_VERSION`) into `telemetry.lastReportedIdentifier` (`v<N>` with its key as `key:label`, anything
   else as an app version), so the first report says where the device came from;
 - delete its `codepush/` folder, but only if its native class is absent (`com.microsoft.cordova.CodePush` /
   `CodePush`), so a misbuilt app carrying both does not lose that plugin's package.

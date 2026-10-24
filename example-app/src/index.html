@@ -2,7 +2,9 @@
 <html lang="en" dir="ltr" class="hydrated">
   <head>
     <meta charset="UTF-8" />
-    <title>Example Capacitor App</title>
+    <title>capacitor-code-push example</title>
+    <!-- Change this before cutting a release, to see which bundle is served. -->
+    <meta name="build" content="store bundle" />
     <meta
       name="viewport"
       content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
@@ -11,14 +13,16 @@
   </head>
   <body>
     <main>
-      <h1>Capacitor Test Plugin Project</h1>
-      <p>
-        This project can be used to test out the functionality of your plugin. Nothing in the
-        <em>example-app/</em> folder will be published to npm when using this template, so you can create away!
-      </p>
-      <label for="echoInput">Echo Text:</label>
-      <input type="text" id="echoInput" name="echoInput" value="Hello World!" />
-      <button onclick="testEcho()">Click Me!</button>
+      <h1>capacitor-code-push</h1>
+      <p>Serving: <strong id="build"></strong></p>
+      <p>Set <code>plugins.CodePush</code> in <code>capacitor.config.json</code> first.</p>
+      <button onclick="notifyReady()">notifyApplicationReady</button>
+      <button onclick="current()">getCurrentPackage</button>
+      <button onclick="pending()">getPendingPackage</button>
+      <button onclick="check()">checkForUpdate</button>
+      <button onclick="sync()">sync</button>
+      <button onclick="restart()">restartApplication</button>
+      <pre id="log"></pre>
     </main>
 
     <script src="./js/example.js" type="module"></script>
