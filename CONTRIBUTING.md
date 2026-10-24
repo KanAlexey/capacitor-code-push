@@ -29,6 +29,12 @@ It will compile the TypeScript code from `src/` into ESM JavaScript in `dist/esm
 
 Then, Rollup will bundle the code into a single file at `dist/plugin.js`. This file is used in apps without bundlers by including it as a script in `index.html`.
 
+#### Tests
+
+Every layer and its command is in the README's [Tests](README.md#tests) section. A change to the install or rollback
+rules needs its case in the state machine tests of both platforms (`android/src/test`, `test/ios/Tests`), and a change
+a user would notice goes into `CHANGELOG.md` under `Unreleased`.
+
 #### `npm run verify`
 
 Build and validate the web and native projects.
@@ -43,10 +49,12 @@ This template is integrated with ESLint, Prettier, and SwiftLint. Using these to
 
 ## Publishing
 
-There is a `prepublishOnly` hook in `package.json` which prepares the plugin before publishing, so all you need to do is run:
+Nothing is published by hand. A push to `master` runs `.github/workflows/test.yml`, and when every job passes and the
+version in `package.json` is not on npm yet, its `publish` job publishes it through npm's trusted publishing, tags
+the commit that first carried the version, and makes a GitHub release from that version's block of `CHANGELOG.md`.
+So a release is: move the `Unreleased` notes under a new `## v<version>` heading, bump `version` in `package.json`
+and `src/version.ts` (a test keeps them equal), and merge.
 
-```shell
-npm publish
-```
-
-> **Note**: The [`files`](https://docs.npmjs.com/cli/v7/configuring-npm/package-json#files) array in `package.json` specifies which files get published. If you rename files/directories or add files elsewhere, you may need to update it.
+> **Note**: The [`files`](https://docs.npmjs.com/cli/v7/configuring-npm/package-json#files) array in `package.json`
+> specifies which files get published. The demo installs the plugin from a packed copy, so a file missing there breaks
+> the demo and the end-to-end tests first.

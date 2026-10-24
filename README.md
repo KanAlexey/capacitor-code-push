@@ -1,28 +1,47 @@
 # capacitor-code-push
 
-CodePush client for Capacitor apps: over-the-air web updates from a CodePush-compatible server such as
-[Revopush](https://revopush.org).
+## Why this plugin exists
 
-It is written for apps moving from Cordova to Capacitor that ran Microsoft's archived
-[cordova-plugin-code-push](https://github.com/microsoft/cordova-plugin-code-push). It speaks the same protocol, keeps
-the same client id and the same install modes, and serves an update through Capacitor's own server path, so it
-needs none of cordova-plugin-file, cordova-plugin-zip, cordova-plugin-dialogs, cordova-plugin-device or
-cordova-plugin-advanced-http. How it works, and why, is in [DESIGN.md](DESIGN.md).
+Microsoft's [cordova-plugin-code-push](https://github.com/microsoft/cordova-plugin-code-push) was archived in 2021, and
+the CodePush-compatible servers that replaced App Center, such as [Revopush](https://revopush.org), ship clients for
+React Native only. An app moving from Cordova to Capacitor can keep running the Cordova plugin through Capacitor's
+Cordova layer, with patches, but it then carries five more Cordova plugins only for CodePush (file, zip, dialogs,
+device, advanced-http) and serves updates through a web view engine Capacitor does not have.
 
-> **Status: not yet proven on devices.** The state machine, staging and protocol are covered by tests that need no
-> device (TypeScript, JVM and XCTest), and both platforms build. Nothing has been measured against a real Revopush
-> release yet; DESIGN.md §17 lists what only that can prove.
+This plugin is a native Capacitor 8 client instead:
 
-## Install
+- **The same protocol and the same device.** It speaks the CodePush acquisition protocol, sends the client id
+  cordova-plugin-device sent, and carries the Cordova plugin's last reported version over, so the server keeps
+  counting a device as the same one across the switch.
+- **Served the way Capacitor serves.** A package is a folder Capacitor's bridge serves, chosen before the first page
+  load, so a cold start on an update loads the page once.
+- **The install and rollback rules of react-native-code-push.** A package that never calls
+  `notifyApplicationReady` is rolled back at the next cold start and reported; a new binary starts from the store
+  bundle again. DESIGN.md has the state machine.
+- **No dialog of its own.** `sync` takes a required `onUpdateAvailable` callback, so the app asks in its own words and
+  language.
+
+Also here: tests that need no device (Vitest, Kotlin on the JVM, XCTest on a simulator), an end-to-end run of the demo
+app on an iOS simulator against a local CodePush server, and a demo app in `demo/` that installs the plugin as npm
+would ship it. How it works, and why, is in [DESIGN.md](DESIGN.md).
+
+> **Not yet measured against a real Revopush release.** DESIGN.md §17 lists what only that can prove.
+
+![Platform](https://img.shields.io/badge/platform-android%20%7C%20ios-lightgrey.svg)
+
+## Installation
 
 ```bash
 npm install capacitor-code-push
 npx cap sync
 ```
 
-Capacitor 8, iOS 15 and later (Swift Package Manager), Android API 24 and later.
+## Supported platforms
 
-## Configure
+- Android: API 24 and later, Capacitor 8 (JDK 21 to build)
+- iOS: 15 and later, Capacitor 8 through Swift Package Manager (Xcode 26)
+
+## Configuration
 
 ```ts
 // capacitor.config.ts
@@ -39,7 +58,7 @@ plugins: {
 a local test server serve plain HTTP. `publicKey` is refused for now: signature verification is not built yet, so a
 configured key makes every install fail rather than install unverified code.
 
-## Use
+## Usage
 
 ```ts
 import { CodePush, InstallMode, SyncStatus } from 'capacitor-code-push';
@@ -60,37 +79,56 @@ if (status === SyncStatus.UPDATE_INSTALLED) {
 }
 ```
 
+Every call is described under [API](#api) below.
+
 ## Releasing an update
 
-Release a copy of the app's web build placed in a folder named `www`, for example
-`revopush release <app> ./release/www <targetBinaryVersion>`. The plugin serves the folder that holds
-`index.html`, and computes the store bundle's hash under the same `www` prefix, so the server can tell a device that
-already runs the release. The binary version is `versionName` on Android and `CFBundleShortVersionString` on iOS;
-make sure the iOS build sets `MARKETING_VERSION`.
+Release a copy of the app's web build placed in a folder named `www`:
+
+```bash
+revopush release <app> ./release/www <targetBinaryVersion>
+```
+
+The plugin serves the folder that holds `index.html`, and hashes the store bundle under the same `www` prefix, so the
+server can tell a device that already runs the release. The binary version is `versionName` on Android and
+`CFBundleShortVersionString` on iOS; make sure the iOS build sets `MARKETING_VERSION`.
 
 ## Moving from cordova-plugin-code-push
 
-Remove cordova-plugin-code-push in the same app update that adds this plugin; never ship both. The update is a new
-binary, so every device starts on the store bundle. The plugin carries cordova-plugin-code-push's last reported
-version over once, so the first report names where the device came from, and deletes that plugin's `codepush/`
-folder.
+Remove cordova-plugin-code-push in the same app update that adds this plugin; never ship both, since both would steer
+the web view. The update is a new binary, so every device starts on the store bundle. The plugin carries
+cordova-plugin-code-push's last reported version over once, so the first report names where the device came from,
+and deletes that plugin's `codepush/` folder. Drop `window.CodePushServerUrl` and `window.CodePushDeploymentKey` in
+favour of `configure()`.
 
-## Development
+## Demo
 
-```bash
-npm ci
-npm test                    # TypeScript (Vitest)
-npm run typecheck:test      # sources, tests and the type contract in test/types
-cd android && ./gradlew test   # JVM tests (JDK 21)
-xcodebuild test -scheme CapacitorCodePush -destination 'platform=iOS Simulator,name=<an iPhone>'
-```
+`demo/` is a Capacitor app with one button per call. `npm run ios:sync` (or `android:sync`) in `demo/` packs the
+plugin the way npm would ship it, installs that copy, builds the web app and syncs the native project; open it in
+Xcode or Android Studio from there. The same app carries the autopilot the end-to-end tests drive.
 
-`test/fixtures/hash` holds a release and the package hash the Revopush CLI computes for it; all three suites check
-their hasher against it.
+## Tests
 
-## Licence
+| Layer | Command | Where |
+| --- | --- | --- |
+| TypeScript, with its coverage floor | `npm run test:unit:coverage` | `test/unit` |
+| The type contract (what must not compile) | `npm run typecheck:test` | `test/types` |
+| Kotlin on the JVM, with its floor | `npm run test:android:coverage` | `android/src/test` |
+| XCTest on an iOS simulator, with its floor | `npm run test:ios:coverage` | `test/ios` |
+| The demo against a local CodePush server, on an iOS simulator | `npm run test:e2e:ios` | `test/e2e` |
 
-Apache-2.0. `src/acquisition-client.ts` is adapted from microsoft/code-push and carries its MIT notice.
+`test/fixtures/hash` holds a release and the package hash the Revopush CLI computes for it; the TypeScript, Kotlin
+and Swift hashers are all checked against it. Floors are in `test/coverage/floors.json`: they hold what is measured,
+so coverage cannot fall without somebody lowering one. `IOS_SIMULATOR=<name or udid>` picks the simulator.
+
+## Author
+
+Aleksei Kan, https://github.com/KanAlexey
+
+## LICENSE
+
+**capacitor-code-push** is licensed under the Apache License 2.0; see the LICENSE file. `src/acquisition-client.ts` is
+adapted from microsoft/code-push and carries its MIT notice.
 
 ## API
 
