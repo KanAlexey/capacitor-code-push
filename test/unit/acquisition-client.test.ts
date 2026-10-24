@@ -122,12 +122,16 @@ describe('AcquisitionClient.queryUpdate', () => {
     expect(error).toMatchObject({ status: 404, message: '404: no such deployment' });
   });
 
-  it('names the URL when no answer arrived at all', async () => {
-    const { http } = requester(new Error('offline'));
+  it('names the URL when no answer arrived at all, keeping the cause', async () => {
+    const offline = new Error('offline');
+    const { http } = requester(offline);
 
-    await expect(new AcquisitionClient(http, config).queryUpdate({ appVersion: '2.3.4' })).rejects.toThrow(
+    const error = await new AcquisitionClient(http, config).queryUpdate({ appVersion: '2.3.4' }).catch((e) => e);
+
+    expect(error.message).toMatch(
       /^Couldn't send request to https:\/\/updates\.example\.com\/v0\.1\/public\/codepush\/update_check\?.*: offline$/,
     );
+    expect(error.cause).toBe(offline);
   });
 
   it('refuses to ask without an app version', async () => {
