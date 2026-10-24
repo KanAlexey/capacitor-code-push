@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- CI: the Swift core's XCTests run on the macOS host with `swift test`, not on a simulator, which took most of that job's time
+
 ## v0.1.0
 
 - First version: `sync`, `checkForUpdate`, `download`, `install`, `getCurrentPackage`, `getPendingPackage`,

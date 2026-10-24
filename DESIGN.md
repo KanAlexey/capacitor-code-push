@@ -467,7 +467,7 @@ Without a device:
 | --- | --- | --- |
 | TypeScript | Vitest, fakes for the native plugin and `CapacitorHttp` | `sync` paths and statuses, the required callback, install-mode choice, mandatory handling, `IN_PROGRESS`, ignored failed updates, `checkForUpdate` building the query package, the acquisition client's requests and answers, report sending and record/retry, download and install failure reports, configuration precedence, the reference hash |
 | Android | JUnit on the JVM (`./gradlew test`), real files in temp folders, a small socket HTTP server for downloads | state machine (every row of §8, GC), telemetry (§10), hasher against the shared fixture, unzip refusals, diff, downloader (progress, redirects, HTTP refused), migration |
-| iOS | XCTest on a simulator (`test/ios`, the core linked in), a URLProtocol stub for downloads | the same, for Swift |
+| iOS | XCTest (`test/ios`, the core linked in) on the macOS host with `swift test`, or on a simulator; a URLProtocol stub for downloads | the same, for Swift |
 | End to end | the demo app, built on the packed plugin, against `test/e2e/fake-server.mjs` on an iOS simulator and an Android emulator | a fresh install reporting its binary, an update installed for the next restart, a cold start serving it with no store bundle load first, a mandatory update applied at once, a rollback after the app is killed during the trial launch and its report, a diff that adds and deletes files, and the reset a new binary makes |
 | Builds | `./gradlew build`, `xcodebuild` for a generic iOS device | both platforms compile with Capacitor 8.5.3 |
 

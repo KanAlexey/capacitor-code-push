@@ -21,7 +21,7 @@ This plugin is a native Capacitor 8 client instead:
 - **No dialog of its own.** `sync` takes a required `onUpdateAvailable` callback, so the app asks in its own words and
   language.
 
-Also here: tests that need no device (Vitest, Kotlin on the JVM, XCTest on a simulator), an end-to-end run of the demo
+Also here: tests that need no device (Vitest, Kotlin on the JVM, XCTest of the Swift core), an end-to-end run of the demo
 app on an iOS simulator and an Android emulator against a local CodePush server, and a demo app in `demo/` that
 installs the plugin as npm would ship it. How it works, and why, is in [DESIGN.md](DESIGN.md).
 
@@ -114,7 +114,7 @@ Xcode or Android Studio from there. The same app carries the autopilot the end-t
 | TypeScript, with its coverage floor | `npm run test:unit:coverage` | `test/unit` |
 | The type contract (what must not compile) | `npm run typecheck:test` | `test/types` |
 | Kotlin on the JVM, with its floor | `npm run test:android:coverage` | `android/src/test` |
-| XCTest on an iOS simulator, with its floor | `npm run test:ios:coverage` | `test/ios` |
+| XCTest of the Swift core on the macOS host, with its floor (`npm run test:ios` runs it on a simulator) | `npm run test:ios:coverage` | `test/ios` |
 | The demo against a local CodePush server, on an iOS simulator | `npm run test:e2e:ios` | `test/e2e` |
 | The same, on an Android emulator (never a phone on the cable) | `npm run test:e2e:android` | `test/e2e` |
 

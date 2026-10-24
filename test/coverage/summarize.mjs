@@ -37,7 +37,7 @@ const layers = {
   },
   // llvm-cov export, for ios/Sources/CodePushCore only (test/ios/coverage.sh)
   ios: {
-    title: 'XCTest on a simulator, ios/Sources/CodePushCore',
+    title: 'XCTest on the macOS host, ios/Sources/CodePushCore',
     lines() {
       const { count, covered } = JSON.parse(read('coverage/ios.json')).data[0].totals.lines;
       return { found: count, hit: covered };
