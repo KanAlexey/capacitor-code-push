@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
 // The git tag and the GitHub release of a version that is on npm. The publish job runs this after `npm publish`, and the same commands
 // back-fill an older version by hand:
 //

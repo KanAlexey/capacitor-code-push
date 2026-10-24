@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
 /**
  * The line coverage of one layer of the tests, read from what its tool wrote, printed (and added to a CI job's summary), and
  * compared with its floor in floors.json:
