@@ -293,6 +293,13 @@ Why this shape:
   Capacitor's key empty and sets the path in `load()`, before the first page load. Setting it through the view
   controller instead (`setServerBasePathWithPath:`) also reloads, so the store bundle starts loading first;
   setting it on the bridge before `viewDidLoad` avoids that double load.
+- **Android loads the page twice on a cold start onto a package**, and that is Capacitor's doing: with a stored
+  path, `Bridge.loadWebView` calls `setServerBasePath`, which posts a load, and then makes its own `loadUrl`. Both
+  come from the package's folder, so the store bundle never shows, but the first page's script sometimes runs
+  before the second replaces it (measured on an Android 14 emulator by the end-to-end scenario, which counts it).
+  Avoiding it would mean setting the bridge's private `serverPath` by reflection before `loadWebView`; not done.
+  Anything that stores a path through Capacitor's own `WebView.persistServerBasePath` goes through the same code.
+  iOS loads once.
 - The origin does not change (`https://localhost` on Android, `capacitor://localhost` on iOS by default), so local
   storage, IndexedDB and cookies carry over between the store bundle and packages.
 
@@ -466,16 +473,15 @@ Without a device:
 
 The process-wide guard against a recreated bridge (§8) lives in the glue and has no test yet.
 
-Only a device with real Revopush releases proves:
+The end-to-end layer has run green on an iPhone 16 Pro simulator (iOS 18.3), an iPhone 17 Pro simulator (iOS 26)
+and an Android 14 emulator (2026-10-24). Still to prove, on phones and against real Revopush releases (each release
+reaches real devices, so each one needs the owner's yes):
 
-- Revopush's answers and download URLs (CDN, redirects);
-- whether Revopush serves diffs to this client, their exact `hotcodepush.json`, and that its package hash equals
-  ours for the merged result (and for the store bundle, which decides whether a device on it is offered a release
-  it already has);
-- an app on a package: cold start, client-side routing, lazy chunks, no double load, data kept across the switch;
-- rollback after a real kill during the trial launch, on both platforms, and its report landing;
+- Revopush's answers and download URLs (CDN, redirects), and whether it serves diffs to this client, with the exact
+  `hotcodepush.json` and a package hash equal to ours for the merged result and for the store bundle;
+- a real app on a package: client-side routing, lazy chunks, a service worker, data kept across the switch;
 - `ON_NEXT_RESUME` timing, `IMMEDIATE` with a progress dialog open;
-- the binary-update reset through a real store or test-track install;
+- the binary-update reset through a real store or test-track install, and the guard against a recreated bridge (§8);
 - client id continuity and the metrics Revopush shows (active, installed, rolled back);
 - hashing the store bundle on a slow Android phone, and the extra disk use.
 

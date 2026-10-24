@@ -76,3 +76,6 @@ captures
 /coverage/
 test/ios/.build/
 test/ios/Package.resolved
+
+# Kotlin compiler sessions
+.kotlin/

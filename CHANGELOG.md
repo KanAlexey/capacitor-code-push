@@ -13,4 +13,4 @@
 - `onUpdateAvailable` is a required `sync` option: the plugin shows no dialog of its own
 - Moving from cordova-plugin-code-push: the same client id and the last reported version carried over
 - Tests: TypeScript (Vitest), Kotlin on the JVM, XCTest on an iOS simulator, and an end-to-end run of the demo app on
-  an iOS simulator against a local CodePush server
+  an iOS simulator and an Android emulator against a local CodePush server

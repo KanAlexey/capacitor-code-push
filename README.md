@@ -22,8 +22,8 @@ This plugin is a native Capacitor 8 client instead:
   language.
 
 Also here: tests that need no device (Vitest, Kotlin on the JVM, XCTest on a simulator), an end-to-end run of the demo
-app on an iOS simulator against a local CodePush server, and a demo app in `demo/` that installs the plugin as npm
-would ship it. How it works, and why, is in [DESIGN.md](DESIGN.md).
+app on an iOS simulator and an Android emulator against a local CodePush server, and a demo app in `demo/` that
+installs the plugin as npm would ship it. How it works, and why, is in [DESIGN.md](DESIGN.md).
 
 > **Not yet measured against a real Revopush release.** DESIGN.md §17 lists what only that can prove.
 
@@ -116,6 +116,7 @@ Xcode or Android Studio from there. The same app carries the autopilot the end-t
 | Kotlin on the JVM, with its floor | `npm run test:android:coverage` | `android/src/test` |
 | XCTest on an iOS simulator, with its floor | `npm run test:ios:coverage` | `test/ios` |
 | The demo against a local CodePush server, on an iOS simulator | `npm run test:e2e:ios` | `test/e2e` |
+| The same, on an Android emulator (never a phone on the cable) | `npm run test:e2e:android` | `test/e2e` |
 
 `test/fixtures/hash` holds a release and the package hash the Revopush CLI computes for it; the TypeScript, Kotlin
 and Swift hashers are all checked against it. Floors are in `test/coverage/floors.json`: they hold what is measured,
