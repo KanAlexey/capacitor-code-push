@@ -26,6 +26,10 @@ updates:
       default-days: 7
     ignore:
       - dependency-name: '@capacitor/*'
+      # TypeScript 7 is the rewritten compiler, and typescript-eslint (below 6.1) and the build do not take it yet.
+      # Lift this once they do.
+      - dependency-name: typescript
+        versions: ['>=7']
     labels: [dependencies]
 
   # the demo app: Vite (Capacitor moves with the plugin, by hand)
