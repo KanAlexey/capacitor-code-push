@@ -178,7 +178,7 @@ export class AcquisitionClient {
       response = await this.http.request(method, url, body);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      throw new Error(`Couldn't send request to ${url}: ${reason}`);
+      throw new Error(`Couldn't send request to ${url}: ${reason}`, { cause: error });
     }
     if (response.status !== 200) {
       throw new CodePushHttpError(`${response.status}: ${response.body}`, response.status);
