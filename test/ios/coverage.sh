@@ -3,7 +3,8 @@
 # coverage/ios.json. Run from test/ios (`npm run test:ios:coverage`).
 set -euo pipefail
 derived=.build/derived-data
-rm -rf "$derived"
+# Only the last run's coverage goes: the rest of the derived data is what CI caches for an incremental build.
+rm -rf "$derived"/Build/ProfileData "$derived"/Logs/Test
 xcodebuild test -scheme CodePushCoreTests-Package -destination "platform=iOS Simulator,id=$(node simulator.mjs --udid)" \
   -skipPackagePluginValidation -enableCodeCoverage YES -derivedDataPath "$derived"
 profile=$(ls -t "$derived"/Build/ProfileData/*/Coverage.profdata | head -1)

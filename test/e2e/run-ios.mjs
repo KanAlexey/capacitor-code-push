@@ -47,10 +47,8 @@ main(async () => {
         ],
         { stdio: ['ignore', 'ignore', 'inherit'] },
       );
-      if (device.state !== 'Booted') {
-        simctl('boot', udid);
-        device.state = 'Booted';
-      }
+      // Boots the device when it is not, and waits until it is: CI may already have started booting it.
+      simctl('bootstatus', udid, '-b');
       if (fresh) {
         try {
           simctl('uninstall', udid, appId);
