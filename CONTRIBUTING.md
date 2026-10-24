@@ -55,6 +55,10 @@ the commit that first carried the version, and makes a GitHub release from that 
 So a release is: move the `Unreleased` notes under a new `## v<version>` heading, bump `version` in `package.json`
 and `src/version.ts` (a test keeps them equal), and merge.
 
+The `publish` job runs only while the repository variable `NPM_PUBLISH` is `true`. Before the first release: publish
+the first version by hand (`npm login`, then `npm publish --access public`), set the package's Trusted Publisher on
+npmjs.com to this repository and `test.yml` with no environment, and then set the variable.
+
 > **Note**: The [`files`](https://docs.npmjs.com/cli/v7/configuring-npm/package-json#files) array in `package.json`
 > specifies which files get published. The demo installs the plugin from a packed copy, so a file missing there breaks
 > the demo and the end-to-end tests first.
