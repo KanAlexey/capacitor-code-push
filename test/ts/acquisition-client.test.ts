@@ -50,9 +50,9 @@ describe('AcquisitionClient.queryUpdate', () => {
   it('leaves out a field that is absent and encodes the values', async () => {
     const { http, sent } = requester({ status: 200, body: '{}' });
 
-    await new AcquisitionClient(http, { ...config, serverUrl: 'https://x.test/', deploymentKey: 'a b&c' }).queryUpdate(
-      { appVersion: '1.0 beta' },
-    );
+    await new AcquisitionClient(http, { ...config, serverUrl: 'https://x.test/', deploymentKey: 'a b&c' }).queryUpdate({
+      appVersion: '1.0 beta',
+    });
 
     expect(sent[0].url).toBe(
       'https://x.test/v0.1/public/codepush/update_check?deployment_key=a%20b%26c&app_version=1.0%20beta' +

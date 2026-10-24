@@ -88,8 +88,9 @@ class FakeNative implements CodePushNativePlugin {
     if (this.downloadError) {
       throw this.downloadError;
     }
-    const { downloadUrl: _downloadUrl, ...rest } = update;
-    return { package: { ...rest, isFirstRun: false } };
+    const local: LocalPackage & { downloadUrl?: string } = { ...update, isFirstRun: false };
+    delete local.downloadUrl;
+    return { package: local };
   }
   async installPackage(options: { packageHash: string; installMode: InstallMode; minimumBackgroundDuration: number }) {
     this.calls.push(['installPackage', options]);
@@ -300,7 +301,9 @@ describe('sync', () => {
 
       expect(statuses.at(-1)).toBe(SyncStatus.ERROR);
       expect(native.removedListeners).toBe(0);
-      expect(server.reportsTo('deploy').map((body) => body?.status)).toEqual(reportsFailure ? ['DeploymentFailed'] : []);
+      expect(server.reportsTo('deploy').map((body) => body?.status)).toEqual(
+        reportsFailure ? ['DeploymentFailed'] : [],
+      );
     }
   });
 
@@ -342,11 +345,12 @@ describe('checkForUpdate', () => {
     native.pending = localPackage({ packageHash: 'h7', label: 'v7' });
     await client.checkForUpdate();
 
-    expect(server.updateChecks().map((query) => [query.get('label'), query.get('package_hash'), query.get('app_version')]))
-      .toEqual([
-        ['v6', 'h6', '2.3.4'],
-        ['v7', 'h7', '2.3.4'],
-      ]);
+    expect(
+      server.updateChecks().map((query) => [query.get('label'), query.get('package_hash'), query.get('app_version')]),
+    ).toEqual([
+      ['v6', 'h6', '2.3.4'],
+      ['v7', 'h7', '2.3.4'],
+    ]);
   });
 
   it('asks without a hash when the store bundle cannot be hashed', async () => {
@@ -371,7 +375,11 @@ describe('checkForUpdate', () => {
 
     const update = await client.checkForUpdate('other-key');
 
-    expect(update).toMatchObject({ failedInstall: true, deploymentKey: 'other-key', downloadUrl: updateInfo.download_url });
+    expect(update).toMatchObject({
+      failedInstall: true,
+      deploymentKey: 'other-key',
+      downloadUrl: updateInfo.download_url,
+    });
     expect(server.updateChecks()[0].get('deployment_key')).toBe('other-key');
   });
 });
@@ -411,12 +419,17 @@ describe('configuration', () => {
 describe('download and install', () => {
   it('reports a finished download to the server', async () => {
     const { server, client } = setUp();
-    const update = (await client.checkForUpdate())!;
+    const update = await client.checkForUpdate();
+    if (!update) {
+      throw new Error('the fake server offers an update');
+    }
 
     await client.download(update);
     await client.reportsSettled();
 
-    expect(server.reportsTo('download')).toEqual([{ client_unique_id: 'client-9', deployment_key: 'key-1', label: 'v8' }]);
+    expect(server.reportsTo('download')).toEqual([
+      { client_unique_id: 'client-9', deployment_key: 'key-1', label: 'v8' },
+    ]);
   });
 
   it('reports a failed install as DeploymentFailed and rethrows', async () => {

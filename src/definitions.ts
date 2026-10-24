@@ -118,12 +118,7 @@ export interface CodePushPlugin {
 
 /** Codes the native side rejects with. */
 export type CodePushErrorCode =
-  | 'DOWNLOAD_FAILED'
-  | 'INVALID_PACKAGE'
-  | 'HASH_MISMATCH'
-  | 'SIGNATURE_UNSUPPORTED'
-  | 'NOT_STAGED'
-  | 'INVALID_ARGUMENT';
+  'DOWNLOAD_FAILED' | 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'SIGNATURE_UNSUPPORTED' | 'NOT_STAGED' | 'INVALID_ARGUMENT';
 
 export type DeploymentStatus = 'DeploymentSucceeded' | 'DeploymentFailed';
 

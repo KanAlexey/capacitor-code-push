@@ -28,7 +28,7 @@ class PackageStagerTest {
     /** The hash a release of [files], under a folder named [folder], has on the server. */
     private fun releaseHash(files: Map<String, String>, folder: String = "www"): String {
         val root = File(temporary.newFolder(), folder)
-        files.forEach { (path, content) -> File(root, path).apply { parentFile.mkdirs() }.writeText(content) }
+        files.forEach { (path, content) -> File(root, path).apply { parentFile?.mkdirs() }.writeText(content) }
         return PackageHasher.hash(DirectoryTree(root), folder)
     }
 
