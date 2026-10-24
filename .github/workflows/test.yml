@@ -55,17 +55,17 @@ jobs:
           path: android/build/reports/coverage/test/debug
           if-no-files-found: ignore
 
-  # XCTest of the Swift core on an iOS simulator (test/ios), with its floor; then the whole Swift package, Capacitor glue included,
-  # built for a device. Capacitor 8's binaries need Xcode 26.
+  # XCTest of the Swift core on the macOS host (swift test in test/ios), with its floor: the core is Foundation, CryptoKit and
+  # ZIPFoundation, the same APIs as on iOS, so it needs no simulator, which took most of this job's time. Then the whole Swift
+  # package, Capacitor glue included, built for a device; the glue runs on a simulator in e2e-ios. Capacitor 8 needs Xcode 26.
   ios-xctest:
     runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - run: npm ci
       - run: npm run test:ios:coverage
       - run: npm run verify:ios
       - name: Keep the coverage report
@@ -75,12 +75,10 @@ jobs:
           name: coverage-ios
           path: coverage/ios.json
           if-no-files-found: ignore
-      # A cancelled run leaves xcodebuild and the simulator running, which slows the runner's own clean-up for minutes.
+      # A cancelled run leaves xcodebuild running, which slows the runner's own clean-up for minutes.
       - name: Stop what the tests left running
         if: always()
-        run: |
-          pkill -f '[x]codebuild' || true
-          xcrun simctl shutdown all || true
+        run: pkill -f '[x]codebuild' || true
 
   # The demo app, built on the packed plugin, against a local CodePush server on an iOS simulator: install, cold start on a package,
   # rollback of one that never confirms, a diff, and the reset a new binary makes (test/e2e/run-ios.mjs).
