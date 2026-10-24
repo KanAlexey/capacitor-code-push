@@ -27,10 +27,14 @@ describe('scripts/release.mjs', () => {
     const dir = mkdtempSync(join(tmpdir(), 'release-'));
     try {
       const git = (...args: string[]) =>
-        execFileSync('git', ['-c', 'user.name=test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false', ...args], {
-          cwd: dir,
-          encoding: 'utf8',
-        }).trim();
+        execFileSync(
+          'git',
+          ['-c', 'user.name=test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false', ...args],
+          {
+            cwd: dir,
+            encoding: 'utf8',
+          },
+        ).trim();
       git('init', '-q', '-b', 'master');
       const commit = (version: string, message: string) => {
         writeFileSync(join(dir, 'package.json'), JSON.stringify({ version }));
