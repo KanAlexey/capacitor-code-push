@@ -3,11 +3,10 @@ import XCTest
 
 /// The repository's `test/fixtures/hash`, shared with the TypeScript and Kotlin suites.
 private let fixture = URL(fileURLWithPath: #filePath)
-    .deletingLastPathComponent() // CodePushCoreTests
     .deletingLastPathComponent() // Tests
     .deletingLastPathComponent() // ios
-    .deletingLastPathComponent() // repository root
-    .appendingPathComponent("test/fixtures/hash", isDirectory: true)
+    .deletingLastPathComponent() // test
+    .appendingPathComponent("fixtures/hash", isDirectory: true)
 
 final class PackageHasherTests: XCTestCase {
     func testTheSharedFixtureHashesToTheValueTheRevopushCLIComputes() throws {

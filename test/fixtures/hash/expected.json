@@ -1,5 +1,5 @@
 {
-  "comment": "Package hash of release/www by @revopush/code-push-cli 0.0.11 rules; test/ts/hash-fixture.test.ts recomputes it, the native suites must match it.",
+  "comment": "Package hash of release/www by @revopush/code-push-cli 0.0.11 rules; test/unit/hash-fixture.test.ts recomputes it, the native suites must match it.",
   "releaseRoot": "release/www",
   "packageHash": "df82fa36a8996511190113adc8f5d80b7e6260247d21506bf0a2f9e02cad0102"
 }

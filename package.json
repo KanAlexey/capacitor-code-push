@@ -1,6 +1,6 @@
 {
   "name": "capacitor-code-push",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "CodePush client for Capacitor apps: over-the-air web updates from a CodePush-compatible server such as Revopush",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -11,8 +11,10 @@
     "android/build.gradle",
     "dist/",
     "ios/Sources",
-    "ios/Tests",
-    "Package.swift"
+    "Package.swift",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "author": "Aleksei Kan <kang.alexey96@gmail.com>",
   "license": "Apache-2.0",
@@ -34,24 +36,29 @@
     "live-update"
   ],
   "scripts": {
+    "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.mjs",
+    "clean": "rimraf ./dist",
+    "watch": "tsc --watch",
+    "docgen": "docgen --api CodePushPlugin --output-readme README.md --output-json dist/docs.json",
+    "test": "vitest run",
+    "test:unit:coverage": "vitest run --coverage && node test/coverage/summarize.mjs js",
+    "typecheck:test": "tsc -p test/tsconfig.json",
+    "test:android": "cd android && ./gradlew test",
+    "test:android:coverage": "cd android && ./gradlew createDebugUnitTestCoverageReport && cd .. && node test/coverage/summarize.mjs android",
+    "test:ios": "cd test/ios && xcodebuild test -scheme CodePushCoreTests-Package -destination \"platform=iOS Simulator,id=$(node simulator.mjs --udid)\" -skipPackagePluginValidation",
+    "test:ios:coverage": "cd test/ios && ./coverage.sh && cd ../.. && node test/coverage/summarize.mjs ios",
+    "test:e2e:ios": "node test/e2e/run-ios.mjs",
+    "test:e2e:android": "node test/e2e/run-android.mjs",
     "verify": "npm run verify:ios && npm run verify:android && npm run verify:web",
     "verify:ios": "xcodebuild -scheme CapacitorCodePush -destination generic/platform=iOS",
-    "verify:android": "cd android && ./gradlew clean build test && cd ..",
+    "verify:android": "cd android && ./gradlew clean build && cd ..",
     "verify:web": "npm run build",
     "lint": "npm run eslint && npm run prettier -- --check && npm run swiftlint -- lint",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write && npm run swiftlint -- --fix --format",
     "eslint": "eslint . --ext ts",
     "prettier": "prettier \"**/*.{css,html,ts,js,java}\" --plugin=prettier-plugin-java",
     "swiftlint": "node-swiftlint",
-    "docgen": "docgen --api CodePushPlugin --output-readme README.md --output-json dist/docs.json",
-    "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.mjs",
-    "clean": "rimraf ./dist",
-    "watch": "tsc --watch",
-    "prepublishOnly": "npm run build",
-    "test": "vitest run",
-    "typecheck:test": "tsc -p test/tsconfig.json",
-    "test:android": "cd android && ./gradlew test",
-    "test:ios": "xcodebuild test -scheme CapacitorCodePush -destination \"platform=iOS Simulator,name=${IOS_SIMULATOR:-iPhone 16 Pro}\""
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.0",
@@ -61,6 +68,7 @@
     "@ionic/eslint-config": "^0.4.0",
     "@ionic/prettier-config": "^4.0.0",
     "@ionic/swiftlint-config": "^2.0.0",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^8.57.1",
     "prettier": "^3.6.2",
     "prettier-plugin-java": "^2.7.7",
@@ -85,5 +93,6 @@
     "android": {
       "src": "android"
     }
-  }
+  },
+  "homepage": "https://github.com/KanAlexey/capacitor-code-push#readme"
 }

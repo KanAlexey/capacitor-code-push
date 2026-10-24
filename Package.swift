@@ -28,13 +28,6 @@ let package = Package(
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
                 .product(name: "Cordova", package: "capacitor-swift-pm")
             ],
-            path: "ios/Sources/CodePushPlugin"),
-        .testTarget(
-            name: "CodePushCoreTests",
-            dependencies: [
-                "CodePushCore",
-                .product(name: "ZIPFoundation", package: "ZIPFoundation")
-            ],
-            path: "ios/Tests/CodePushCoreTests")
+            path: "ios/Sources/CodePushPlugin")
     ]
 )

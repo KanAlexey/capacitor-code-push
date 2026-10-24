@@ -71,3 +71,8 @@ captures
 
 # The package-hash fixture carries .DS_Store files on purpose: the hash must skip them.
 !test/fixtures/**/.DS_Store
+
+# Coverage reports (test/coverage/summarize.mjs reads them)
+/coverage/
+test/ios/.build/
+test/ios/Package.resolved

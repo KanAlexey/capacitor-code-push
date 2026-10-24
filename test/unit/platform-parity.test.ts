@@ -69,12 +69,12 @@ describe('the native bridge', () => {
 describe('the package manifest', () => {
   const manifest = JSON.parse(read('package.json')) as { files: string[] };
 
-  it('ships what an app builds from, and no test fixtures', () => {
+  it('ships what an app builds from, and no tests', () => {
     expect(manifest.files).toEqual(
       expect.arrayContaining(['android/src/main/', 'android/build.gradle', 'dist/', 'ios/Sources', 'Package.swift']),
     );
-    // Package.swift names the test target's folder, so SwiftPM refuses the package if ios/Tests is missing.
-    expect(manifest.files).toContain('ios/Tests');
-    expect(manifest.files.some((path) => path.startsWith('test'))).toBe(false);
+    // The tests live under test/, with their own Package.swift, so none of them is published.
+    expect(manifest.files.some((path) => path.startsWith('test') || path.includes('Tests'))).toBe(false);
+    expect(read('Package.swift')).not.toMatch(/testTarget/);
   });
 });

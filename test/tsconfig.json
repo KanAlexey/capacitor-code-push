@@ -9,5 +9,5 @@
     "types": ["node"]
   },
   "files": [],
-  "include": ["../src/**/*.ts", "ts/**/*.ts", "types/**/*.ts", "../vitest.config.mts"]
+  "include": ["../src/**/*.ts", "unit/**/*.ts", "types/**/*.ts", "../vitest.config.mts"]
 }
