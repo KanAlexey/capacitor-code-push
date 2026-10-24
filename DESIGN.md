@@ -130,9 +130,9 @@ export interface CodePushConfig {
   debug?: boolean;         // console logging with a "[CodePush]" prefix
 }
 
-export interface CodePushApi {
+export interface CodePushPlugin {
   configure(config: CodePushConfig): void;
-  sync(options: SyncOptions, callbacks?: SyncCallbacks): Promise<SyncStatus>;   // final status
+  sync(options: SyncOptions, callbacks?: SyncCallbacks): Promise<SyncStatus>;   // final status, or rejects
   checkForUpdate(deploymentKey?: string): Promise<RemotePackage | null>;
   download(update: RemotePackage, onProgress?: (p: DownloadProgress) => void): Promise<LocalPackage>;
   install(update: LocalPackage, options?: Pick<SyncOptions,
@@ -143,14 +143,16 @@ export interface CodePushApi {
   restartApplication(onlyIfUpdateIsPending?: boolean): Promise<void>;
 }
 
-export const CodePush: CodePushApi;
+export const CodePush: CodePushPlugin;
 ```
 
 Differences from cordova-plugin-code-push, on purpose:
 
 - Promises instead of success/error callbacks; packages are plain data, so `remotePackage.download(...)` becomes
   `CodePush.download(remotePackage)`.
-- `sync` returns the final status and reports the intermediate ones through `onStatus`.
+- `sync` resolves with the final status (`UP_TO_DATE`, `UPDATE_IGNORED`, `UPDATE_INSTALLED`, `IN_PROGRESS`) and
+  reports every status through `onStatus`; on failure it reports `ERROR` there and rejects with the error, where
+  the Cordova plugin called an error callback.
 - `updateDialog` (a native, English-only dialog through cordova-plugin-dialogs) is replaced by
   `onUpdateAvailable`, and it is **required**: the Cordova plugin's default was to download without asking, and a
   caller that forgot the question would keep that silently. The type makes forgetting it a compile error; at run
@@ -331,7 +333,8 @@ An update check answers `{ update_info }`: `update_app_version` means "newer bin
 date), `is_available: false` means up to date, otherwise `label`, `description`, `target_binary_range`,
 `is_mandatory`, `package_hash`, `package_size`, `download_url`. A non-200 answer is an error carrying the status
 and body. Headers: `X-CodePush-Plugin-Name: native-code-push`, `X-CodePush-Plugin-Version` (this plugin's),
-`X-CodePush-SDK-Version`, and `Content-Type: application/json` on a POST. The plugin name is the value a
+`X-CodePush-SDK-Version: 4.2.3` (the microsoft/code-push release whose protocol the client speaks), and
+`Content-Type: application/json` on a POST. The plugin name is the value a
 Cordova-based client already sends to Revopush; whether the server keys anything on it is not known, so it is
 kept rather than changed.
 

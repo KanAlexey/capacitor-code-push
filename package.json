@@ -26,7 +26,12 @@
   "keywords": [
     "capacitor",
     "plugin",
-    "native"
+    "native",
+    "codepush",
+    "code-push",
+    "revopush",
+    "ota",
+    "live-update"
   ],
   "scripts": {
     "verify": "npm run verify:ios && npm run verify:android && npm run verify:web",
@@ -42,7 +47,9 @@
     "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.mjs",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "vitest run",
+    "typecheck:test": "tsc -p test/tsconfig.json"
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.0",
