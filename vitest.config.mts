@@ -11,7 +11,7 @@ export default defineConfig({
       // index.ts only wires the real plugin and CapacitorHttp together; web.ts is the browser stub.
       exclude: ['src/index.ts', 'src/web.ts', 'src/definitions.ts'],
       reporter: ['text-summary', 'lcov'],
-      reportsDirectory: 'coverage',
+      reportsDirectory: 'coverage/js',
     },
   },
 });
