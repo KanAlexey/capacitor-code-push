@@ -1,0 +1,25 @@
+{
+  "name": "capacitor-code-push-demo",
+  "description": "Demo of capacitor-code-push: one button per call, and the autopilot the end-to-end tests drive",
+  "type": "module",
+  "scripts": {
+    "plugin:pack": "node scripts/pack-plugin.mjs",
+    "build": "vite build",
+    "ios:sync": "npm run plugin:pack && npm install && vite build && npx cap sync ios",
+    "android:sync": "npm run plugin:pack && npm install && vite build && npx cap sync android",
+    "start": "vite"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
+    "capacitor-code-push": "file:.plugin"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
+    "vite": "^7.3.1"
+  },
+  "license": "Apache-2.0",
+  "private": true,
+  "version": "1.0.0"
+}

@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.5.3"),
-        .package(name: "CapacitorCodePush", path: "../../../..")
+        .package(name: "CapacitorCodePush", path: "../../../.plugin")
     ],
     targets: [
         .target(

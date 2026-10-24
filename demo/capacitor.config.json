@@ -1,0 +1,16 @@
+{
+  "appId": "com.example.plugin",
+  "appName": "example-app",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    },
+    "CodePush": {
+      "serverUrl": "http://localhost:3999/",
+      "iosDeploymentKey": "e2e-ios",
+      "androidDeploymentKey": "e2e-android",
+      "allowInsecureDownloads": true
+    }
+  }
+}
