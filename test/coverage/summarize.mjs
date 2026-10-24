@@ -6,7 +6,8 @@
  *
  *   node test/coverage/summarize.mjs js | android | ios
  *
- * A floor is not a target: it holds what is measured, so coverage cannot fall without somebody choosing to lower it here.
+ * A floor is not a target: it holds what is measured, rounded down, so coverage cannot fall without somebody choosing to lower
+ * it here.
  */
 import { appendFileSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -20,7 +21,7 @@ const layers = {
   js: {
     title: 'Vitest, src/',
     lines() {
-      const lcov = read('coverage/lcov.info');
+      const lcov = read('coverage/js/lcov.info');
       const sum = (key) => [...lcov.matchAll(new RegExp(`^${key}:(\\d+)`, 'gm'))].reduce((total, match) => total + Number(match[1]), 0);
       return { found: sum('LF'), hit: sum('LH') };
     },
@@ -57,12 +58,12 @@ const { found, hit } = layer.lines();
 const percent = found === 0 ? 0 : (100 * hit) / found;
 const ok = percent >= floor;
 
-const line = `${layer.title}: ${percent.toFixed(1)}% of lines (${hit} of ${found}), floor ${floor}% ${ok ? 'held' : 'NOT HELD'}`;
+const line = `${layer.title}: ${percent.toFixed(2)}% of lines (${hit} of ${found}), floor ${floor}% ${ok ? 'held' : 'NOT HELD'}`;
 console.log(line);
 if (process.env.GITHUB_STEP_SUMMARY) {
   appendFileSync(
     process.env.GITHUB_STEP_SUMMARY,
-    `### Coverage: ${layer.title}\n\n| lines | covered | floor | |\n| --- | --- | --- | --- |\n| ${found} | ${hit} (${percent.toFixed(1)}%) | ${floor}% | ${ok ? 'held' : '**below the floor**'} |\n\n`,
+    `### Coverage: ${layer.title}\n\n| lines | covered | floor | |\n| --- | --- | --- | --- |\n| ${found} | ${hit} (${percent.toFixed(2)}%) | ${floor}% | ${ok ? 'held' : '**below the floor**'} |\n\n`,
   );
 }
 process.exit(ok ? 0 : 1);
