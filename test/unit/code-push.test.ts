@@ -506,6 +506,40 @@ describe('notifyApplicationReady and status reports', () => {
     ]);
   });
 
+  it('sends a report once when the app confirms on start and syncs right after', async () => {
+    const { native, server, client } = setUp();
+    server.updateCheck = { status: 200, body: JSON.stringify({ update_info: { is_available: false } }) };
+    // Native hands the same report to every call until recordStatusReported lands.
+    native.statusReport = {
+      status: 'DeploymentSucceeded',
+      package: localPackage(),
+      previousLabelOrAppVersion: '2.3.4',
+    };
+
+    await Promise.all([client.notifyApplicationReady(), client.sync(syncOptions())]);
+    await client.reportsSettled();
+
+    expect(native.called('notifyApplicationReady')).toHaveLength(2);
+    expect(server.reportsTo('deploy')).toHaveLength(1);
+    expect(native.called('recordStatusReported')).toEqual([native.statusReport]);
+  });
+
+  it('sends a report again after the server refused it', async () => {
+    const { native, server, client } = setUp();
+    server.reports = { status: 503, body: 'busy' };
+    native.statusReport = { appVersion: '2.3.4', previousLabelOrAppVersion: '2.3.3' };
+
+    await client.notifyApplicationReady();
+    await client.reportsSettled();
+    server.reports = { status: 200, body: '' };
+    await client.notifyApplicationReady();
+    await client.reportsSettled();
+
+    expect(server.reportsTo('deploy')).toHaveLength(2);
+    expect(native.called('saveStatusReportForRetry')).toEqual([native.statusReport]);
+    expect(native.called('recordStatusReported')).toEqual([native.statusReport]);
+  });
+
   it('keeps a report the server did not take for a retry, and still resolves', async () => {
     const { native, server, client } = setUp();
     server.reports = { status: 503, body: 'busy' };

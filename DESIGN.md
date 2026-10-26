@@ -321,6 +321,11 @@ On success JS calls `recordStatusReported`, which moves `lastReportedIdentifier`
 on failure `saveStatusReportForRetry`. Every `sync` calls `notifyApplicationReady` first, so a failed report is
 retried on the next sync. Reporting never makes `notifyApplicationReady` reject.
 
+Native hands the same report to every call until `recordStatusReported` lands, so an app that calls
+`notifyApplicationReady` on start and `sync` right after (which calls it first) gets the report twice. JS sends reports
+one at a time and skips one it has already sent in this process; without that, both phones in §17 reported every
+install twice and Revopush counted each one twice.
+
 Also kept from the Cordova plugin: a download report after a successful download, and a `DeploymentFailed` report
 when a downloaded package cannot be installed (unzip, layout, hash).
 
@@ -474,16 +479,31 @@ Without a device:
 The process-wide guard against a recreated bridge (§8) lives in the glue and has no test yet.
 
 The end-to-end layer has run green on an iPhone 16 Pro simulator (iOS 18.3), an iPhone 17 Pro simulator (iOS 26)
-and an Android 14 emulator (2026-10-24). Still to prove, on phones and against real Revopush releases (each release
-reaches real devices, so each one needs the owner's yes):
+and an Android 14 emulator (2026-10-24).
 
-- Revopush's answers and download URLs (CDN, redirects), and whether it serves diffs to this client, with the exact
-  `hotcodepush.json` and a package hash equal to ours for the merged result and for the store bundle;
-- a real app on a package: client-side routing, lazy chunks, a service worker, data kept across the switch;
+On phones (2026-10-25 and 26): the plugin inside a production Ionic/Angular app, a web root of about 1,600 files and
+36 MB, on a Galaxy A13 (Android 14) and an iPhone 17 Pro (iOS 26.6.1), against Revopush, with every release targeted
+at a binary version only those two phones carried. Measured there:
+
+- Revopush's `update_check` answers and its download URLs (served directly, no redirect), and its package hash, which
+  the TypeScript reference, the Swift hasher and the Kotlin hasher all reproduce for a real release;
+- a full release downloaded with progress, installed for the next restart, applied by `restartApplication()` from the
+  app's own dialog and by a cold start, with sign-in, IndexedDB data and client-side routing intact;
+- a diff Revopush built (10,445 bytes against an 11.8 MB release), applied over the running package with a file added
+  and one deleted, and checked against the package hash;
+- a rollback: a release that never confirmed was rolled back at the next cold start, reported as `DeploymentFailed`,
+  and skipped when the server offered it again;
+- the move from cordova-plugin-code-push: the first binary report names the version the old plugin last reported;
+- reports reaching Revopush's metrics, about half an hour late. That is where the doubled reports in §10 showed;
+- on the Galaxy A13, the store-bundle hash takes about 9 s the first time after an install and comes from the cache
+  after that, and a diff takes about 13 s to apply, since the base is copied and the whole result hashed; on the
+  iPhone the store-bundle hash takes under a second.
+
+Still to prove:
+
 - `ON_NEXT_RESUME` timing, `IMMEDIATE` with a progress dialog open;
 - the binary-update reset through a real store or test-track install, and the guard against a recreated bridge (§8);
-- client id continuity and the metrics Revopush shows (active, installed, rolled back);
-- hashing the store bundle on a slow Android phone, and the extra disk use.
+- client id continuity against the Cordova plugin, a service worker in the app, and the extra disk use.
 
 ## 18. Decisions
 
