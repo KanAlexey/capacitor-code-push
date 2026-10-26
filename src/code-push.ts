@@ -58,6 +58,11 @@ export class CodePushClient implements CodePushPlugin {
   private nativeConfiguration?: Promise<NativeConfiguration>;
   private syncInProgress = false;
   private reporting: Promise<void> = Promise.resolve();
+  /**
+   * Reports the server took in this process, by content. Native hands the same report to every call until
+   * recordStatusReported lands, so an app that confirms on start and syncs right after would send it twice.
+   */
+  private readonly sentReports = new Set<string>();
 
   constructor(
     private readonly native: CodePushNativePlugin,
@@ -219,6 +224,11 @@ export class CodePushClient implements CodePushPlugin {
   }
 
   private async sendStatusReport(statusReport: StatusReport): Promise<void> {
+    // Reports run one at a time (background), so a second copy of a report runs after the first one settled.
+    const key = JSON.stringify(statusReport);
+    if (this.sentReports.has(key)) {
+      return;
+    }
     try {
       const { client } = await this.acquisition(statusReport.package?.deploymentKey);
       if (statusReport.package) {
@@ -237,6 +247,7 @@ export class CodePushClient implements CodePushPlugin {
         );
       }
       this.log(`Reported status: ${JSON.stringify(statusReport)}`);
+      this.sentReports.add(key);
       await this.native.recordStatusReported({ statusReport });
     } catch (error) {
       this.log(`An error occurred while reporting status: ${JSON.stringify(statusReport)} ${String(error)}`);
